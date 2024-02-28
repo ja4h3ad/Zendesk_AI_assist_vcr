@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!--   See Using Zendesk Garden:
+    https://developer.zendesk.com/apps/docs/developer-guide/setup#using-zendesk-garden
+    https://garden.zendesk.com/css-components/bedrock/
+    https://garden.zendesk.com/css-components/utilities/typography/
+   -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+      integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/combine/npm/@zendeskgarden/css-bedrock@7.0.21,npm/@zendeskgarden/css-utilities@4.3.0"
+    />
+    <style>
+      .hidden {
+        display: none;
+      }
+      .summary,
+      .tags {
+        margin-bottom: 10px;
+      }
+      .tag {
+        display: none; /*change to inline-flex*/;
+        flex-wrap: nowrap;
+        -webkit-box-align: center;
+        align-items: center;
+        transition: box-shadow 0.1s ease-in-out 0s;
+        box-sizing: border-box;
+        border: 0px;
+        max-width: 100%;
+        overflow: hidden;
+        vertical-align: middle;
+        text-decoration: none;
+        white-space: nowrap;
+        font-weight: 600;
+        direction: ltr;
+        border-radius: 2px;
+        padding: 0px 8px;
+        min-width: calc(16px + 1ch);
+        height: 20px;
+        line-height: 1.66667;
+        font-size: 12px;
+        background-color: rgb(233, 235, 237);
+        color: rgb(73, 84, 92);
+      }
+
+      .section-title {
+        margin-top: 20px;
+        margin-bottom: 10px;
+        font-size: 120%;
+      }
+
+      .chart {
+        width: 100%;
+        height: 80px;
+        _border: 1px solid black;
+      }
+
+      #fullscreen {
+        display: none; /*will eventually be used*/
+        float: right;
+        margin-left: 20px;
+        margin-bottom: 20px;
+        margin-right: 10px;
+        margin-top: 3px;
+        font-size: 15px;
+        cursor: pointer;
+        transition: 0.2s;
+        transform: scale(1);
+      }
+
+      #fullscreen:hover {
+        transform: scale(1.2);
+      }
+      #loading {
+        display: none;
+        padding: 30px 0;
+        text-align: center;
+        font-size: 25px;
+      }
+      #loading i {
+        animation: rotate 1s infinite linear;
+      }
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .is-loading > * {
+        display: none;
+      }
+      .is-loading > #loading {
+        display: block;
+      }
+
+      textarea {
+        appearance: none;
+        border: 1px solid rgb(216, 220, 222);
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+        vertical-align: middle;
+        font-family: inherit;
+        padding: 0.714286em 0.857143em;
+        min-height: 40px;
+        line-height: 1.28571;
+        font-size: 14px;
+        background-color: rgb(255, 255, 255);
+        color: rgb(47, 57, 65);
+        resize: none;
+        margin-bottom: 12px;
+      }
+
+      button {
+        display: inline-flex;
+        -webkit-box-align: center;
+        align-items: center;
+        -webkit-box-pack: center;
+        justify-content: center;
+        transition: border-color 0.25s ease-in-out 0s,
+          box-shadow 0.1s ease-in-out 0s, background-color 0.25s ease-in-out 0s,
+          color 0.25s ease-in-out 0s, outline-color 0.1s ease-in-out 0s,
+          z-index 0.25s ease-in-out 0s;
+        margin: 0px;
+        border: 1px solid rgb(31, 115, 183);
+        border-radius: 4px;
+        cursor: pointer;
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: inherit;
+        font-weight: 400;
+        -webkit-font-smoothing: subpixel-antialiased;
+        box-sizing: border-box;
+        user-select: none;
+        padding: 0px 0.916667em;
+        height: 32px;
+        line-height: 30px;
+        font-size: 12px;
+        outline-color: transparent;
+        background-color: transparent;
+        color: rgb(31, 115, 183);
+      }
+
+      button:hover {
+        border-color: rgb(20, 74, 117);
+        background-color: rgba(31, 115, 183, 0.08);
+        color: rgb(20, 74, 117);
+      }
+      #upper-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+  
+      #customer-sentiment, #amber-list {
+        margin-right: 20px; /* Adjust spacing as needed */
+      }
+  
+      #sentiment-indicator {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.5); /* Black, semi-transparent, default indicator */
+        margin-left: 5px;
+        vertical-align: middle;
+      }
+  
+      #amber-list {
+        color: orange; /* Styling for Amber List text */
+        font-weight: bold;
+        display: none; /* Hidden by default */
+      }
+      /* New Styles for Summary Feedback */
+      .summary-feedback {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .summary-feedback i {
+        margin: 0 5px;
+        cursor: pointer;
+    }
+    /* End of New Styles for Summary Feedback */
+
+    /* search interstitials */
+
+    .search-is-loading > * {
+      display: none;
+    }
+
+    .search-is-loading > .search-spinner{
+      display:block;
+    }
+
+    .search-spinner {
+      display: none; /* Hidden by default */
+      text-align: center;
+      padding: 10px 0; /* padding  */
+      /* Additional styling */
+    }
+
+    .icn-spinner {
+      animation: spin-animation 1.0s infinite;
+    }
+    @keyframes spin-animation {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(359deg);
+      }
+    }
+    
+      /* Style to initially hide sentiment indicator and feedback icons */
+    #sentiment-indicator, #solution-feedback, #customer-sentiment {
+        display: none;
+      }
+
+    #copy-solution {
+      cursor: pointer; 
+      /* potentially needs more styling*/
+    }
+
+      /* reserved for additional styles */
+  </style>
+  
+    </style>
+  </head>
+  <body class="is-loading">
+    <p id="loading"><i class="fa-solid fa-spinner"></i></p>
+    <i id="fullscreen" class="fa-solid fa-expand"></i>
+
+    <div id="upper-info">
+      <!-- Customer Sentiment Section -->
+      <div id="customer-sentiment">
+        <p>Customer Sentiment: <span id="sentiment-indicator"></span></p>
+      </div>
+  
+      <!-- Amber List Section -->
+      <div id="amber-list" class="hidden">
+        <p>Amber List</p>
+      </div>
+    </div>
+
+    <div class="summary-container">
+      <p id="summary" class="summary">
+          <!-- Summary text will go here -->
+      </p>
+      <div class="summary-feedback">
+          <i id="thumbs-up" class="fa fa-thumbs-up"></i>
+          <i id="thumbs-down" class="fa fa-thumbs-down"></i>
+      </div>
+    </div>
+  
+    <p class="tags">
+      <span class="tag">SMS</span>
+      <span class="tag">blocked traffic</span>
+      <span class="tag">filtering</span>
+    </p>
+    <p class="section-title hidden">Sentiment over Time</p>
+    <div id="chart" class="chart hidden"></div>
+
+    <p class="section-title">Find a Solution in the KB or Dev Pages</p>
+    <div id="issues">
+      <textarea
+        name=""
+        id="search-query"
+        cols="30"
+        rows="5"
+        placeholder="Enter your question"
+      ></textarea>
+      <button id="search-submit">Search</button>
+      <button id="search-automatic" class="hidden">Automatic search</button>
+      <!-- spinner to display proximally to the input text-->
+      <p id="search-loading" class="search-spinner hidden"><i class="fa-solid fa-spinner icn-spinner"></i></p>
+      <!--Add a copy/paste functionality for the links and LLM gen text-->
+      <div id="solution-container">
+        <p id = 'solution-text'></p> 
+        <i id='copy-solution' class='fa fa-copy' style="display:none;"></i> <!--copy icon-->
+    </div>
+
+    <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
+    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+
+    <script src="./js/middleware.js"></script>
+    <script src="./js/modal.js"></script>
+    <script src="./js/chart.js"></script>
+    <script src="./js/chart-sentiment-over-time.js"></script>
+    <script src="./js/main.js"></script>
+    
+  </body>
+</html>

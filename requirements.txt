@@ -1,0 +1,15 @@
+gspread
+google-auth
+Flask==3.0.2
+Flask-CORS
+requests
+python-dotenv
+retry
+pymongo
+debugpy
+vonage_cloud_runtime==1.2.0
+vonage
+flask[async]
+
+
+

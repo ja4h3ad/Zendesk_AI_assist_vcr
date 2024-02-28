@@ -1,0 +1,170 @@
+The `Modal` class:  offers a way to interact with additional content in a separate window, without leaving the main application interface. 
+For instance, it can be used to show detailed information, forms, or additional options related to a specific ticket or issue, enhancing the
+ user experience by providing contextual information without overcrowding the main app interface.
+
+1. manages the creation and control of a new browser window
+    a.  **Constructor - `constructor(url)`**: 
+   - The constructor takes a `url` parameter, which is the URL of the page to be loaded in the modal window.
+   - This `url` is stored in the `this.url` property of the Modal instance.
+
+    b. Open Method - `open(args)`**: 
+   - This method is responsible for opening the modal window.
+   - It uses the `window.open()` method to create a new browser window or tab, with the URL previously set in the constructor (`this.url`). The target is `_blank`, indicating that the link will open in a new window or tab.
+   - The `popup=1` parameter in `window.open()` is intended to open the window in a popup style, although the exact behavior can depend on the browser and its settings.
+   - It also allows sending a message to the newly opened window using `postMessage`. This is useful for passing data or instructions to the modal window. The `args` parameter represents the data to be sent.
+
+    c. Close Method - `close()`**: 
+   - This method is used to close the modal window.
+   - It calls the `close()` method on the window object stored in `this.window`, which was created when the modal was opened.
+
+In main.js, an instance of the Modal class is created when a user clicks on an element (presumably a button) with the id fullscreen. 
+This is done inside the event listener for the onclick event of the fullscreen element
+
+It first checks if an element with the id fullscreen exists.
+If it does, an onclick event listener is attached to it.
+When the fullscreen element is clicked, a new Modal instance is created. The constructor of the Modal class is called with a URL composed of /assets/modal.html#${ticketId}. This URL likely points to an HTML file that will be loaded into the modal, with the current ticketId appended as a hash fragment.
+Immediately after the Modal instance is created, the open() method of the Modal class is called. This opens a new browser window or tab with the specified URL.
+Opening the Modal Window:
+
+Summary:  the open() method of the Modal class is invoked, which opens a new window or tab with the content specified in the URL (/assets/modal.html#${ticketId}).
+
+
+Circular Polarity Indicator and Amber List Indicator
+============================
+
+
+
+
+1. HTML Structure
+
+In `iframe.html` file, added the new sections above where the summary is displayed. Placed them in `<div>` elements for easy styling and manipulation:
+
+```html
+<div id="customer-sentiment">
+  <p>Customer Sentiment: <span id="sentiment-indicator"></span></p>
+</div>
+<div id="amber-list">
+  <!-- Initially hidden, will show "Amber List Customer" if true -->
+</div>
+
+<!-- Existing summary and other content below -->
+<div id="summary" class="summary">
+  <!-- Existing summary content -->
+</div>
+```
+
+2. CSS for Styling
+
+Add styles to position the "Customer Sentiment" indicator and style the "Amber List" text:
+
+```css
+#customer-sentiment, #amber-list {
+  margin-top: 10px;
+}
+
+#sentiment-indicator {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: green; /* Default color, can be changed dynamically */
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+
+
+3. JavaScript to Update Elements
+
+In `main.js`, add a simple function to demonstrate the dynamic behavior. Later, you can replace this with real API call logic.
+
+```javascript
+function updateAppDisplay() {
+  // For Customer Sentiment
+  // In the future, replace 'positive' with a real API call
+  const sentiment = 'positive'; // 'positive', 'negative', or 'neutral'
+  const sentimentIndicator = document.getElementById('sentiment-indicator');
+  if (sentimentIndicator) {
+    if (sentiment === 'positive') {
+      sentimentIndicator.style.backgroundColor = 'green';
+    } else if (sentiment === 'negative') {
+      sentimentIndicator.style.backgroundColor = 'red';
+    } else {
+      sentimentIndicator.style.backgroundColor = 'yellow';
+    }
+  }
+
+  // For Amber List
+  // In the future, replace true with a real API call
+  const isAmberList = true; // or false
+  const amberListElement = document.getElementById('amber-list');
+  if (isAmberList) {
+    amberListElement.style.display = 'block';
+    amberListElement.textContent = 'Amber List Customer';
+  }
+}
+
+// Call this function when appropriate
+updateAppDisplay();
+```
+
+
+To Do:  replace the hardcoded values in the `updateAppDisplay` function with actual data from API calls using the `middleware.js` class.
+
+# For demo purposes to hardcode the "Customer Sentiment" indicator to green in  `main.js`, simply set the background color of the sentiment indicator element to green. 
+Do this by directly setting the `style.backgroundColor` property of the element to `'green'`. 
+
+Example - `updateAppDisplay()` function to hardcode the indicator color to green:
+
+```javascript
+function updateAppDisplay() {
+  // Hardcoding Customer Sentiment to green
+  const sentimentIndicator = document.getElementById('sentiment-indicator');
+  if (sentimentIndicator) {
+    sentimentIndicator.style.backgroundColor = 'green';
+  }
+
+  // For Amber List 
+  const isAmberList = true; // or false
+  const amberListElement = document.getElementById('amber-list');
+  if (isAmberList) {
+    amberListElement.style.display = 'block';
+    amberListElement.textContent = 'Amber List Customer';
+  }
+}
+
+
+`
+
+In this updated function:
+
+1. Setting the Indicator Color**: T
+
+Customer Sentiment" indicator is set to 'green' directly. This color will be applied regardless of any other conditions, as it's hard-coded.
+
+2.Amber List Logic: The logic for the "Amber List Customer" will display the text if `isAmberList` is `true`.
+
+After making these changes, whenever  `main.js` file runs this function, it will automatically set the "Customer Sentiment" indicator to green and display the "Amber List Customer" text (since `isAmberList` is set to `true`).
+
+The `main.js` file interacts with the UI defined in `iframe.html` file through the Document Object Model (DOM). 
+
+1. HTML Elements with IDs: In `iframe.html`, certain HTML elements are assigned unique `id` attributes. For example:
+   - `<span id="sentiment-indicator"></span>` for the customer sentiment indicator.
+   - `<div id="amber-list" class="hidden"></div>` for the Amber List section.
+
+2. JavaScript Accesses the DOM: In `main.js`, the JavaScript code uses `document.getElementById('...')` to access these elements. This method returns a reference to the element with the specified ID in the DOM. 
+
+3. Manipulating Elements with JavaScript: Once JavaScript has references to these elements, it can manipulate them. For instance:
+   - Changing styles: `sentimentIndicator.style.backgroundColor = 'green';` directly modifies the `style` attribute of the `sentiment-indicator` element, changing its background color.
+   - Altering text content: `amberListElement.textContent = 'Amber List Customer';` changes the text content of the `amber-list` element.
+   - Changing visibility: `amberListElement.style.display = 'block';` affects the CSS display property, making the initially hidden (`display: none`) element visible.
+
+4. Real-Time Updates: When the JavaScript code in `main.js` executes (like when the page loads or in response to an event), it immediately applies these changes to the elements in the live DOM. 
+This results in real-time updates to the UI as seen in the browser. The browser renders these changes as soon as the JavaScript manipulates the DOM elements.
+
+5. Event-Driven Updates: When js code is triggered, (like a button click or an API response), the updates to the DOM happen in response to those events. This makes the UI dynamic and interactive.
+
+6. Separation of Concerns: This approach keeps a clear separation between the structure and styling of your page (defined in HTML and CSS) and its behavior (defined in JavaScript). The HTML/CSS provides 
+the layout and appearance, while JavaScript dynamically alters that layout and appearance based on logic, user interactions, or data from an API.
+
+So, `main.js` file is altering the appearance and content of the UI elements defined in `iframe.html` by manipulating the DOM. 

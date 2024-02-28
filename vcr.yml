@@ -1,0 +1,22 @@
+project:
+    name: Zendesk AI Copilot
+instance:
+    name: UAT
+    runtime: python3
+    region: aws.use1
+    application-id: c676b982-e59b-4cfb-aadb-eb85ae10f61c
+    entrypoint: [python3, main.py]
+    build-script: ./build.sh
+    environment:
+        - name: MONGO_URL
+          value: "mongodb://user-3ecb6a35-uJr9iSgALwanvjJYg_cIS:WSfsGq6VGgkyFT1i@k8s-mongodb-mongodbn-4b692c1fe6-7673eaf6008ff29f.elb.us-east-1.amazonaws.com:27017/db-3ecb6a35-9Ah1_xt0rqdxVJxnM3xQl?authSource=admin&ssl=false&directConnection=true"
+        - name: MONGO_DB_NAME
+          value: "db-3ecb6a35-9Ah1_xt0rqdxVJxnM3xQl"
+debug:
+    name: debug
+    entrypoint: [python3, -m, debugpy, --listen, localhost:3001, main.py]
+
+
+
+
+

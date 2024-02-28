@@ -1,0 +1,29 @@
+{
+  "apps": [
+    {
+      "name": "Zendesk AI Copilot",
+      "id": "0",
+      "default_locale": "en",
+      "asset_url_prefix": "http://localhost:4567/assets/",
+      "version": "1.0.0",
+      "framework_version": "2.0",
+      "locations": {
+        "support": {
+          "ticket_sidebar": { "url": "assets/iframe.html", "flexible": true }
+        }
+      }
+    }
+  ],
+  "installations": [
+    {
+      "app_id": "0",
+      "name": "Zendesk AI Copilot",
+      "collapsible": true,
+      "enabled": true,
+      "id": "2e5afe9e-1dd9-44f3-bb9e-bdec8cb8f0a3",
+      "requirements": [],
+      "settings": [{ "title": "Ticket overview" }],
+      "updated_at": "2024-02-18T14:02:12.500Z"
+    }
+  ]
+}
