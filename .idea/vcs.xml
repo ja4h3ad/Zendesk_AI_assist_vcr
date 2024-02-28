@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/UI Widget/Zendesk_app/Zendesk_AI_Copilot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Zendesk_AI_Copilot_Serverless" vcs="Git" />
   </component>
 </project>
