@@ -1,19 +1,25 @@
+# Define separate patterns for salutations and signatures
+SALUTATION_PATTERNS = [r'Thank you for contacting Vonage(?: API)? Support']
+
+
 SIGNATURE_PATTERNS = [
-    r'[\w\s,]+(?:Operational Business Partner|Vonage API Support)[^!]+',
+    r'Many thanks',
+    r'Kind Regards',
+    r'Best Regards',
+    r'Communications APIs',
+    r'Unified Communications',
+    r'Contact Centers',
     r'Eric Ong \| Strategic Regional CX Consultant - SEA and India \+65 9111 0312 • eric.ong@vonage.com • LinkedIn Level 18 • 5 Temasek Boulevard, Suntec Tower 5 • Singapore • 038985',
     r'Follow Vonage on Social Media[ |•\w\s]+X',
-    r'2023 Planned Out-Of-Office Period: TBC',
+    r'20[2-9]\d Planned Out-Of-Office Period:'
+
 ]
 
 
-
-NAMES = [r'Sotirios']
-
 CONTACT_PHRASES = [
-    r'(Thank you for contacting [\w\s]+)?(Vonage API Support|Many thanks|Kind Regards|Thanks|Best Regards|Communications APIs|Unified Communications|Contact Centers)',
     r'Thank you for your reply',
     r'Thank you for reaching out to our team',
-    r'2023 Planned Out-Of-Office Period: TBC'
+    r'Out-of-Office'
 ]
 
 SECURITY_ARTIFACTS = [

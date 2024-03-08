@@ -61,7 +61,7 @@ def make_llm_request(auth_token, query, prompt_template, repetition_penalty):
             "top_p": 0.7,
             "temperature": 0.01,
             "top_k": 5,
-            "max_new_tokens": 1024,
+            "max_new_tokens": 512,
             "repetition_penalty": repetition_penalty
         }
     }
@@ -92,10 +92,10 @@ def summarize_text(query, auth_token):
     logger.info("Entering summarize_text")
 
     prompt_template = """
-    Generate a point-by-point summary of the key findings and discussions in the following support case {query}
+    Generate a concise summary of the the correspondence in {query}.
     """
 
-    return make_llm_request(auth_token, query, prompt_template, 1.7)
+    return make_llm_request(auth_token, query, prompt_template, 2.5)
 
 
 def entity_extraction(query, auth_token):
@@ -116,4 +116,4 @@ def entity_extraction(query, auth_token):
     label_2:
 
     """
-    return make_llm_request(auth_token, query, prompt_template, 1.3)
+    return make_llm_request(auth_token, query, prompt_template, 1.5)

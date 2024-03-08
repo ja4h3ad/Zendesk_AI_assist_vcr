@@ -1,2 +1,9 @@
-# created by virtualenv automatically
+.env
+# Virtual environments
+env/
+venv/
+ENV/
+.pyvenv.cfg
 
+# Pyenv version file
+.python-version

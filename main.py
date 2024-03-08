@@ -13,6 +13,7 @@ import os
 import sys
 from os.path import join, dirname
 from dotenv import load_dotenv
+from html import unescape
 from retry import retry
 from vonage_cloud_runtime.vcr import VCR
 
@@ -22,7 +23,7 @@ vcr = VCR()
 # Load environment variables and config files
 dotenv_path = join(dirname(__file__), ".env")
 load_dotenv(dotenv_path)
-from config import SIGNATURE_PATTERNS, NAMES, CONTACT_PHRASES, SECURITY_ARTIFACTS
+from config import SIGNATURE_PATTERNS, CONTACT_PHRASES, SECURITY_ARTIFACTS, SALUTATION_PATTERNS
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -39,7 +40,7 @@ def preprocess_text(text):
     '''
     text = unescape(text)
     # Remove all defined patterns that are persistent in email comms
-    for pattern in SIGNATURE_PATTERNS + NAMES + CONTACT_PHRASES + SECURITY_ARTIFACTS:
+    for pattern in SALUTATION_PATTERNS + SIGNATURE_PATTERNS + CONTACT_PHRASES + SECURITY_ARTIFACTS:
         text = re.sub(pattern, ' ', text, flags=re.IGNORECASE)
 
     # Normalize all whitespace (spaces, tabs, newlines, carriage returns, etc.) to a single space
@@ -78,9 +79,15 @@ def preprocess_text(text):
     date_time_pattern = r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b|\b\d{2,4}[/-]\d{1,2}[/-]\d{1,2}\b|\b\d{1,2}:\d{2}\b'
     text = re.sub(date_time_pattern, '', text)
 
-    # Remove punctuation except plus sign
-    punctuation = str.maketrans('', '', string.punctuation.replace('+', ''))
-    text = text.translate(punctuation)
+    # Remove special characters except for +, _, periods, commas and question marks - needed for syntax
+
+    exclusion = "+_.,?'"
+    new_punctuation = ''.join(char for char in string.punctuation if char not in exclusion)
+    # identify a translation table
+    # argument_1 and argument_2 are for character replacement
+    # argument_3 is for charcter deletion which are the new_punctuation characters
+    translation_table = str.maketrans('', '', new_punctuation)
+    text = text.translate(translation_table)
 
     # Removing auto-generated correspondence artifacts
     auto_gen_pattern = r'[\w\s,]+ Support <> [\w\s,]+\(\w+\) <> RE: [\w\s:]+'
@@ -96,34 +103,49 @@ def preprocess_text(text):
 def vona_bot_route():
     data = request.json
     query = data.get('query')
-    print(query)
+    try:
+        # Set the URL for the API call
+        url = "https://rag-eu.ai.vonage.com/v1/query"
 
-    if not query:
-        return jsonify({'error': 'query parameter is missing'}), 400
-
-    result = requests.get(
-        "https://rag-eu.ai.vonage.com/v1/query",
-        params={
-            "kb": "zendesk",
-            "query": query  # Replace with the query parameter
+        # Define the headers with your account ID
+        headers = {
+            'x-account-id': 'f2321f87'  # Make sure this matches your actual account ID
         }
-    )
 
-    if result.status_code != 200:
-        logging.error(f"RAG service returned status code: {result.status_code}")
+        # Define the parameters for the GET request
+        params = {
+            "kb": "zendesk",
+            "query": query
+        }
+
+        # Make the GET request
+        response = requests.get(url, headers=headers, params=params)
+
+        # Check if the response status code is not 200 (OK)
+        if response.status_code != 200:
+            # Log the error with detailed information
+            logging.error(
+                f"RAG service returned status code: {response.status_code}, reason: {response.reason}, response body: {response.text}")
+            return "", [], ""
+
+        # If the response is successful, parse the JSON
+        json_result = response.json()
+        generated_answer = json_result.get("result") or ""
+        references = json_result.get("references") or []
+        rag_version = json_result.get("version") or ""
+        resp = jsonify({
+            'generated answer':  generated_answer,
+            'references':  references,
+            'rag_version':  rag_version
+        }), 200
+
+        return resp
+
+    except requests.RequestException as e:
+        # Log any request exceptions
+        logging.error(f"Error occurred: {str(e)}")
         return "", [], ""
 
-    json_result = result.json()
-    generated_answer = json_result.get("result") or ""
-    references = json_result.get("references") or []
-    rag_version = json_result.get("version") or ""
-    resp = jsonify({
-        'generated_answer': generated_answer,
-        'references': references,
-        'rag_version': rag_version
-    }), 200
-
-    return resp
 
 
 @app.route('/ticket/<ticket_number>', methods=['GET'])
@@ -161,12 +183,8 @@ def get_ticket_info(ticket_number: str):
             continue
         cleaned_body = preprocess_text(plain_body)
         all_comments_text += f"{name}: {cleaned_body}\n"
-        # to be removed from app.py upon deployment
-        # file_path2 = '../Zendesk_Project_artifacts/future_files/clean_comments_with_name.txt'  # Use .txt file extension for plain text
-        # with open(file_path2, 'w', encoding='utf-8') as file:
-        #     file.write(all_comments_text)
 
-    # print("Done")
+
     # Authenticate once to the LLM endpoint
     auth_token = authenticate()
 
@@ -219,11 +237,25 @@ def handle_copy_action():
     '''
     data = request.json
     ticket_id = data['ticketId']
+    content_type = data.get('contentType', 'unknown') # get the content type that was copied
     user_id = data.get('userId', 'anonymous')
+
+    # Example of handling based on content type
+    if content_type == 'solutionText':
+        # Handle recording the copy action for solution text specifically
+        print(f"Recording action for copying solution text. Ticket ID: {ticket_id}, User ID: {user_id}")
+    elif content_type == 'relatedLinks':
+        # Handle recording the copy action for related links specifically
+        print(f"Recording action for copying related links. Ticket ID: {ticket_id}, User ID: {user_id}")
+    else:
+        # Handle generic or unknown content type
+        print(f"Recording generic copy action. Ticket ID: {ticket_id}, User ID: {user_id}")
+
+
+    db.record_copy_action(ticket_id, user_id, content_type)
 
     # Use the class method to record copy action
     db.record_copy_action(ticket_id, user_id)
-    print('the message was copied')
     return jsonify({'message': 'Copy action recorded successfully'}), 200
 
 
