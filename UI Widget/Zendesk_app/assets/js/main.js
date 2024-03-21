@@ -107,9 +107,13 @@ async function main() {
     try {
       //API call to VonaBot
       const result = await middleware.findSimilarIssue(query);
+      console.log(result); // Add this line to log the server's response
   
       //set innerHTML of issues container to include the solution and related links with copy icons
-      issues.innerHTML = `<p id="solution-text">${result.generated_answer}</p>
+
+      issues.innerHTML = `<p id="solution-text">${result['generated answer']}</p>
+      
+      
       <i id='copy-solution-text' class='fa fa-copy' style="cursor:pointer;"></i> <!-- Copy icon for solution text -->
       <br/>
       <p><b> Related Links</b></p>
@@ -147,10 +151,17 @@ window.onload = () => {
   main();
   
 
-  // Event listener for thumbs up
+  // Event listener for thumbs up and subsequent actions
   const thumbsUp = document.getElementById('thumbs-up');
   if (thumbsUp) {
-      thumbsUp.addEventListener('click', () => {
+      thumbsUp.addEventListener('click', function() {
+        //check if already disabled
+        if (this.classList.contains('icon-disabled')){
+          return; //do nothing if disabled
+        }
+        this.classList.add('icon-active'); //mark as active when actuated
+        thumbsDown.style.visibility = 'hidden'; // hide the TD icon if TU is pressed
+        //thumbsDown.classList.add('icon-disabled'); //disable the other icon
           middleware.summaryFeedback(ticketId, true)
               .then(response => {
                   console.log('Positive feedback sent:', response);
@@ -164,7 +175,14 @@ window.onload = () => {
   // Event listener for thumbs down
   const thumbsDown = document.getElementById('thumbs-down');
   if (thumbsDown) {
-      thumbsDown.addEventListener('click', () => {
+      thumbsDown.addEventListener('click', function() {
+        //check is already disabled
+        if (this.classList.contains('icon-disabled')){
+          return; //do nothing if disabled
+        }
+        this.classList.add('icon-active-negative'); //mark as active with negative feedback
+        thumbsUp.style.visibility = 'hidden'; // hide the U icon if TD is pressed
+        //thumbsUp.classList.add('icon-disabled'); //disable other icon
           middleware.summaryFeedback(ticketId, false)
               .then(response => {
                   console.log('Negative feedback sent:', response);
@@ -186,6 +204,8 @@ function addCopyFunctionality() {
       navigator.clipboard.writeText(solutionText)
         .then(() => {
           console.log('Solution text copied to clipboard');
+          copySolutionTextIcon.classList.add('icon-copied'); //indicate success that solution text was copied
+          setTimeout(() => copySolutionTextIcon.classList.remove('icon-copied'), 2000); //reset after 2 seconds
           middleware.vonabotCopyAction(ticketId, 'solutionText') // Adjusted to match your API call structure
             .then(response => console.log('Copy action for solution text recorded:', response))
             .catch(error => console.error('Error recording copy action for solution text:', error));
@@ -205,6 +225,8 @@ function addCopyFunctionality() {
       navigator.clipboard.writeText(linksText)
         .then(() => {
           console.log('Related links copied to clipboard');
+          copyRelatedLinksIcon.classList.add('icon-copied'); //indicate success
+          setTimeout(() => copyRelatedLinksIcon.classList.remove('icon-copied'), 2000); //Reset after 2 seconds
           // Call middleware with 'relatedLinks' as contentType
           middleware.vonabotCopyAction(ticketId, 'relatedLinks')
             .then(response => console.log('Copy action for related links recorded:', response))

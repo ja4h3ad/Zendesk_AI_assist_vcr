@@ -13,7 +13,7 @@ import os
 import sys
 from os.path import join, dirname
 from dotenv import load_dotenv
-from html import unescape
+import html
 from retry import retry
 from vonage_cloud_runtime.vcr import VCR
 
@@ -23,7 +23,7 @@ vcr = VCR()
 # Load environment variables and config files
 dotenv_path = join(dirname(__file__), ".env")
 load_dotenv(dotenv_path)
-from config import SIGNATURE_PATTERNS, CONTACT_PHRASES, SECURITY_ARTIFACTS, SALUTATION_PATTERNS
+from config import SALUTATION_PATTERNS, SYSTEM_PATTERNS, SIGNATURE_PATTERNS, CONTACT_PHRASES, SECURITY_ARTIFACTS
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -38,9 +38,9 @@ def preprocess_text(text):
     4. Remove extra spaces, as well as leading and trailing spaces
     5. Remove separators that exist
     '''
-    text = unescape(text)
+    text = html.unescape(text)
     # Remove all defined patterns that are persistent in email comms
-    for pattern in SALUTATION_PATTERNS + SIGNATURE_PATTERNS + CONTACT_PHRASES + SECURITY_ARTIFACTS:
+    for pattern in SALUTATION_PATTERNS + SYSTEM_PATTERNS + SIGNATURE_PATTERNS + CONTACT_PHRASES + SECURITY_ARTIFACTS:
         text = re.sub(pattern, ' ', text, flags=re.IGNORECASE)
 
     # Normalize all whitespace (spaces, tabs, newlines, carriage returns, etc.) to a single space
@@ -55,6 +55,11 @@ def preprocess_text(text):
     # Removing email addresses
     email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     text = re.sub(email_pattern, '', text)
+
+    # remove random numeric sequence of numbers created by VTF form publisher (1654037608053)
+    vtf_pattern = r'\b\d{13,15}\b'
+    replacement_text = "Robert Gordon is requesting to have this application reviewed"
+    text = re.sub(pattern, replacement_text, text)
 
     # Remove phone patterns
     phone_pattern = r'(\+\d{1,3}[\s.-])?(\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4})'
@@ -88,6 +93,9 @@ def preprocess_text(text):
     # argument_3 is for charcter deletion which are the new_punctuation characters
     translation_table = str.maketrans('', '', new_punctuation)
     text = text.translate(translation_table)
+
+    #     punctuation = str.maketrans('', '', string.punctuation.replace('+', ''))
+    #     text = text.translate(punctuation)
 
     # Removing auto-generated correspondence artifacts
     auto_gen_pattern = r'[\w\s,]+ Support <> [\w\s,]+\(\w+\) <> RE: [\w\s:]+'

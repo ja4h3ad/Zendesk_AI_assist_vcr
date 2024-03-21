@@ -1,6 +1,10 @@
 # Define separate patterns for salutations and signatures
 SALUTATION_PATTERNS = [r'Thank you for contacting Vonage(?: API)? Support']
 
+SYSTEM_PATTERNS = [r'To unsubscribe from this group and stop receiving emails from it, send an email to numbers\+unsubscribe@nexmo\.com\.',
+                   r'A new file has been generated', r'Please find the generated file attached to this email.',
+                   ]
+
 
 SIGNATURE_PATTERNS = [
     r'Many thanks',
