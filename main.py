@@ -36,7 +36,7 @@ def preprocess_text(text):
     2. Remove the effect of email signatures sent in emails
     3. Replace URLs
     4. Remove extra spaces, as well as leading and trailing spaces
-    5. Remove separators that exist
+    5. Remove separators that exist 
     '''
     text = html.unescape(text)
     # Remove all defined patterns that are persistent in email comms

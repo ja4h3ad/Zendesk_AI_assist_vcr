@@ -7,3 +7,5 @@ ENV/
 
 # Pyenv version file
 .python-version
+
+.DS_Store
