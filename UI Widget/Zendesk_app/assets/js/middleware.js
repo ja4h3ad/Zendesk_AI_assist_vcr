@@ -1,5 +1,5 @@
   //const BASE_URL = "https://neru-3ecb6a35-zendesk-ai-copilot-uat.use1.runtime.vonage.cloud";
-  const BASE_URL = "https://fedvzhlw.ngrok.app";
+  const BASE_URL = "https://vonagedev.ngrok.app";
 
   class Middleware {
     getTicketDetail(ticketId) {
@@ -15,20 +15,23 @@
       return this.getRequest(`${BASE_URL}/get_amber_list`); 
     }
 
-    summaryFeedback(ticketId, isPositiveFeedback) {
+    summaryFeedback(ticketId, isPositiveFeedback, userId, summary) {
       const feedbackValue = isPositiveFeedback ? 1: 0; //1 for thumbs up, 0 for thumbs down
       return this.postRequest(`${BASE_URL}/send_feedback`, {
         ticketId: ticketId,
-        feedbackType: feedbackValue
+        feedbackType: feedbackValue,
+        userId:  userId, // include the username in the feedback
+        summary: summary // include the summary in the feedback
       });
     }
 
     // Adjusted vonabotCopyAction method to include content type
-  vonabotCopyAction(ticketId, contentType) {
+  vonabotCopyAction(ticketId, contentType, userId) {
     console.log(`Attempting to record copy action: ${contentType}`);
     return this.postRequest(`${BASE_URL}/record_copy_action`, {
       ticketId: ticketId,
-      contentType: contentType // 'solutionText' or 'relatedLinks'
+      contentType: contentType, // 'solutionText' or 'relatedLinks'
+      userId: userId
     });
   }
 

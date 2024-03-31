@@ -230,9 +230,11 @@ def handle_summary_feedback():
     ticket_id = data['ticketId']
     is_positive_feedback = data['feedbackType'] == 1
     user_id = data.get('userId', 'anonymous')
+    summary = data.get('summary')
+    print(summary)
 
     # Use the class method to record feedback
-    db.record_feedback(ticket_id, is_positive_feedback, user_id)
+    db.record_feedback(ticket_id, is_positive_feedback, summary, user_id)
     return jsonify({'message': 'Feedback recorded successfully'}), 200
 
 
@@ -252,6 +254,7 @@ def handle_copy_action():
     if content_type == 'solutionText':
         # Handle recording the copy action for solution text specifically
         print(f"Recording action for copying solution text. Ticket ID: {ticket_id}, User ID: {user_id}")
+        print(content_type)
     elif content_type == 'relatedLinks':
         # Handle recording the copy action for related links specifically
         print(f"Recording action for copying related links. Ticket ID: {ticket_id}, User ID: {user_id}")
@@ -262,8 +265,6 @@ def handle_copy_action():
 
     db.record_copy_action(ticket_id, user_id, content_type)
 
-    # Use the class method to record copy action
-    db.record_copy_action(ticket_id, user_id)
     return jsonify({'message': 'Copy action recorded successfully'}), 200
 
 

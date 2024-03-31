@@ -1,4 +1,5 @@
 let ticketId; // Global variable to be used in main.js
+let userId; // global variable for authenticated zendesk users
 const middleware = new Middleware();
 
 async function main() {
@@ -7,6 +8,14 @@ async function main() {
   if (client.invoke) {
     client.invoke("resize", { width: "100%", height: "400px" });
     const { ticket } = await client.get("ticket");
+    // Retrieve the current user's name (username)
+  try {
+    const response = await client.get("currentUser.name");
+    userId = response["currentUser.name"]; // Set the global userId
+    console.log("Current User ID: ", userId); // Log the userId (optional)
+  } catch (error) {
+    console.error("Error retrieving current user's name:", error);
+  }
     ticketId = ticket.id;
   } else {
     ticketId = location.hash.substring(1);
@@ -17,7 +26,10 @@ async function main() {
   
   const ticketDetails = await middleware.getTicketDetail(ticketId);
   summary = ticketDetails.llm_summary;
-  console.log(ticketDetails);
+  document.getElementById("summary").innerHTML = summary
+    .split("\n")
+    .join("<br/>");
+  console.log("These is the summary result ", ticketDetails);
   // Logic to update the sentiment indicator and amber list
   // Update sentiment indicator visibility
   // Set Customer Sentiment color
@@ -98,7 +110,7 @@ async function main() {
   const issues = document.getElementById("issues");
   const query = document.getElementById("search-query");
   const submit = document.getElementById("search-submit");
-  //const submitAuto = document.getElementById("search-automatic");
+  
 
   async function submitQuery(query) {
     const searchSpinner = document.getElementById("search-loading"); //get spinner
@@ -155,6 +167,8 @@ window.onload = () => {
   const thumbsUp = document.getElementById('thumbs-up');
   if (thumbsUp) {
       thumbsUp.addEventListener('click', function() {
+        // Retrieve the text content of the summary at the time the button is clicked
+        const summaryText = document.getElementById("summary").innerText;
         //check if already disabled
         if (this.classList.contains('icon-disabled')){
           return; //do nothing if disabled
@@ -162,7 +176,8 @@ window.onload = () => {
         this.classList.add('icon-active'); //mark as active when actuated
         thumbsDown.style.visibility = 'hidden'; // hide the TD icon if TU is pressed
         //thumbsDown.classList.add('icon-disabled'); //disable the other icon
-          middleware.summaryFeedback(ticketId, true)
+        console.log("Sending summary", summary)
+          middleware.summaryFeedback(ticketId, true, userId, summaryText)
               .then(response => {
                   console.log('Positive feedback sent:', response);
               })
@@ -176,6 +191,8 @@ window.onload = () => {
   const thumbsDown = document.getElementById('thumbs-down');
   if (thumbsDown) {
       thumbsDown.addEventListener('click', function() {
+        // Retrieve the text content of the summary at the time the button is clicked
+        const summaryText = document.getElementById("summary").innerText;
         //check is already disabled
         if (this.classList.contains('icon-disabled')){
           return; //do nothing if disabled
@@ -183,7 +200,8 @@ window.onload = () => {
         this.classList.add('icon-active-negative'); //mark as active with negative feedback
         thumbsUp.style.visibility = 'hidden'; // hide the U icon if TD is pressed
         //thumbsUp.classList.add('icon-disabled'); //disable other icon
-          middleware.summaryFeedback(ticketId, false)
+        console.log("Sending summary", summaryText)
+          middleware.summaryFeedback(ticketId, false, userId, summary)
               .then(response => {
                   console.log('Negative feedback sent:', response);
               })
@@ -206,7 +224,7 @@ function addCopyFunctionality() {
           console.log('Solution text copied to clipboard');
           copySolutionTextIcon.classList.add('icon-copied'); //indicate success that solution text was copied
           setTimeout(() => copySolutionTextIcon.classList.remove('icon-copied'), 2000); //reset after 2 seconds
-          middleware.vonabotCopyAction(ticketId, 'solutionText') // Adjusted to match your API call structure
+          middleware.vonabotCopyAction(ticketId, 'solutionText', userId) //
             .then(response => console.log('Copy action for solution text recorded:', response))
             .catch(error => console.error('Error recording copy action for solution text:', error));
         })
@@ -228,7 +246,7 @@ function addCopyFunctionality() {
           copyRelatedLinksIcon.classList.add('icon-copied'); //indicate success
           setTimeout(() => copyRelatedLinksIcon.classList.remove('icon-copied'), 2000); //Reset after 2 seconds
           // Call middleware with 'relatedLinks' as contentType
-          middleware.vonabotCopyAction(ticketId, 'relatedLinks')
+          middleware.vonabotCopyAction(ticketId, 'relatedLinks', userId)
             .then(response => console.log('Copy action for related links recorded:', response))
             .catch(error => console.error('Error recording copy action for related links:', error));
         })
